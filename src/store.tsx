@@ -4,6 +4,7 @@ import { AppState as RNAppState } from 'react-native';
 import { dateKey, generateGoals, type DailyGoal } from './lib/goals';
 import { initialState, reducer, sanitize, STORAGE_KEY, type Action, type AppState } from './lib/state';
 import { levelFromXp, rankForLevel, type LevelInfo, type Rank } from './lib/xp';
+import { setHapticsEnabled } from './components/ui';
 
 interface Store {
   state: AppState;
@@ -71,6 +72,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (ready && state.day.date !== today) dispatch({ type: 'rollover', today });
   }, [ready, today, state.day.date]);
+
+  useEffect(() => setHapticsEnabled(state.settings.haptics), [state.settings.haptics]);
 
   const level = useMemo(() => levelFromXp(state.xp), [state.xp]);
   const goals = useMemo(

@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, radius } from '../theme';
+import { radius, useTheme } from '../theme';
 
 type ToastKind = 'xp' | 'info' | 'error';
 interface ToastMsg {
@@ -17,6 +17,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const anim = useRef(new Animated.Value(0)).current;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const insets = useSafeAreaInsets();
+  const { c: colors } = useTheme();
 
   const show = useCallback(
     (text: string, kind: ToastKind = 'info') => {
@@ -35,7 +36,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     if (timer.current) clearTimeout(timer.current);
   }, []);
 
-  const bg = msg?.kind === 'xp' ? colors.primarySoft : msg?.kind === 'error' ? '#3A1820' : colors.surfaceHigh;
+  const bg = msg?.kind === 'xp' ? colors.primarySoft : msg?.kind === 'error' ? colors.dangerSoft : colors.surfaceHigh;
   const border = msg?.kind === 'xp' ? colors.primary : msg?.kind === 'error' ? colors.danger : colors.border;
 
   return (
@@ -50,7 +51,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               { backgroundColor: bg, borderColor: border, opacity: anim, transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }] },
             ]}
           >
-            <Text style={styles.text}>{msg.text}</Text>
+            <Text style={[styles.text, { color: colors.text }]}>{msg.text}</Text>
           </Animated.View>
         </View>
       ) : null}
@@ -64,5 +65,5 @@ export function useToast() {
 
 const styles = StyleSheet.create({
   toast: { paddingHorizontal: 18, paddingVertical: 12, borderRadius: radius.pill, borderWidth: 1, maxWidth: '90%' },
-  text: { color: colors.text, fontWeight: '700', fontSize: 15, textAlign: 'center' },
+  text: { fontWeight: '800', fontSize: 15, textAlign: 'center' },
 });

@@ -3,8 +3,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { levelFromXp, rankForLevel, xpForLevel, RANKS } from '../xp';
 import { SKILLS, SKILL_BY_ID, canCompleteNextStage, canUndoLastStage, isUnlocked, skillStatus, masteryBonus, stageXp } from '../skills';
-import { reducer, initialState, streak, sanitize, type AppState } from '../state';
-import { generateGoals, addDays, dateKey, PERFECT_DAY_BONUS } from '../goals';
+import { reducer, initialState, streak, sanitize, weekStrip, pendingBadge, type AppState } from '../state';
+import { generateGoals, addDays, dateKey, chestXp } from '../goals';
 import { buildDietPlan } from '../diet';
 import { validateProfile, type Profile } from '../profile';
 
@@ -64,24 +64,38 @@ test('skill stages unlock, award EXP and undo cleanly', () => {
   assert.equal(canCompleteNextStage(s.progress, k.id).ok, true);
 });
 
-test('daily goals tick, untick, perfect bonus and rollover', () => {
+test('daily quests tick, untick, chest and streak', () => {
   let s: AppState = { ...initialState(today), profile };
   const goals = generateGoals({ date: new Date(2026, 10, 26), profile, level: 1, progress: {}, custom: [] });
   assert.ok(goals.length >= 4);
   const sum = goals.reduce((t, g) => t + g.xp, 0);
+  s = reducer(s, { type: 'claimChest', goals, today, now: 1 });
+  assert.equal(s.day.chest, 0, 'chest stays shut until every quest is done');
   for (const g of goals) s = reducer(s, { type: 'toggleGoal', goal: g, goals, today, now: 1 });
-  assert.equal(s.xp, sum + PERFECT_DAY_BONUS);
+  assert.equal(s.xp, sum);
   assert.equal(streak(s), 1);
+  s = reducer(s, { type: 'claimChest', goals, today, now: 1 });
+  s = reducer(s, { type: 'claimChest', goals, today, now: 1 });
+  assert.equal(s.xp, sum + chestXp(today), 'chest opens once');
+  assert.equal(s.chests, 1);
   s = reducer(s, { type: 'toggleGoal', goal: goals[0], goals, today, now: 1 });
-  assert.equal(s.xp, sum - goals[0].xp, 'untick removes goal EXP and bonus');
-  s = reducer(s, { type: 'toggleGoal', goal: goals[0], goals, today, now: 1 });
-  // Next day: fresh list, streak kept from history.
+  assert.equal(s.xp, sum + chestXp(today) - goals[0].xp);
+  assert.equal(streak(s), 1, 'still active with some quests done');
   const tomorrow = addDays(today, 1);
   s = reducer(s, { type: 'rollover', today: tomorrow });
   assert.equal(Object.keys(s.day.done).length, 0);
   assert.equal(streak(s), 1);
-  s = reducer(s, { type: 'rollover', today: addDays(today, 3) });
+  s = reducer(s, { type: 'toggleGoal', goal: goals[1], goals, today: tomorrow, now: 2 });
+  assert.equal(streak(s), 2);
+  assert.equal(s.bestStreak, 2);
+  const strip = weekStrip(s);
+  assert.equal(strip.length, 7);
+  assert.ok(strip[6].today && strip[6].active && strip[5].active && !strip[4].active);
+  s = reducer(s, { type: 'rollover', today: addDays(today, 4) });
   assert.equal(streak(s), 0);
+  assert.equal(s.bestStreak, 2);
+  assert.ok('first-quest' in s.badges);
+  assert.ok(pendingBadge(s));
 });
 
 test('warm-up ticks its goal once', () => {
@@ -120,6 +134,19 @@ test('profile validation', () => {
   assert.deepEqual(validateProfile({ name: 'A', age: '25', heightCm: '178', weightKg: '75,5' }), {});
   const e = validateProfile({ name: ' ', age: 'x', heightCm: '10', weightKg: '' });
   assert.ok(e.name && e.age && e.heightCm && e.weightKg);
+});
+
+test('badges unlock and can be acknowledged', () => {
+  let s = initialState(today);
+  const goals = generateGoals({ date: new Date(), profile: null, level: 1, progress: {}, custom: [] });
+  s = reducer(s, { type: 'completeWarmup', goals, today, now: 5 });
+  assert.ok('warm-1' in s.badges && 'first-quest' in s.badges);
+  while (pendingBadge(s)) s = reducer(s, { type: 'ackBadge', id: pendingBadge(s)! });
+  assert.equal(pendingBadge(s), null);
+  s = reducer(s, { type: 'setTheme', theme: 'light' });
+  s = reducer(s, { type: 'reset', today });
+  assert.equal(s.settings.theme, 'light');
+  assert.equal(s.xp, 0);
 });
 
 test('sanitize survives junk', () => {

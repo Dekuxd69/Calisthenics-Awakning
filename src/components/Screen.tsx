@@ -1,24 +1,20 @@
 import React from 'react';
-import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { ScrollView, View, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, space } from '../theme';
+import { space, useTheme } from '../theme';
 
 export function Screen({ children, scroll = true, style, edges = ['top'] }: { children: React.ReactNode; scroll?: boolean; style?: StyleProp<ViewStyle>; edges?: ('top' | 'bottom')[] }) {
+  const { c } = useTheme();
+  const inner = { width: '100%' as const, maxWidth: 640, alignSelf: 'center' as const };
   return (
-    <SafeAreaView style={styles.safe} edges={edges}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={edges}>
       {scroll ? (
-        <ScrollView contentContainerStyle={[styles.content, style]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          <View style={styles.inner}>{children}</View>
+        <ScrollView contentContainerStyle={[{ paddingHorizontal: space.lg, paddingTop: space.md, paddingBottom: 96 }, style]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <View style={inner}>{children}</View>
         </ScrollView>
       ) : (
-        <View style={[styles.content, styles.inner, { flex: 1 }, style]}>{children}</View>
+        <View style={[{ flex: 1, paddingHorizontal: space.lg, paddingTop: space.md }, inner, style]}>{children}</View>
       )}
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
-  content: { paddingHorizontal: space.lg, paddingTop: space.md, paddingBottom: space.xxl * 2 },
-  inner: { width: '100%', maxWidth: 640, alignSelf: 'center' },
-});

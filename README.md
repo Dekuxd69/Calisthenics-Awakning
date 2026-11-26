@@ -11,12 +11,14 @@ Go to **[Releases](../../releases/latest)**:
 
 ## Features
 
-- **Daily goals:** warm-up, a workout that follows a weekly Push / Pull / Legs rotation, a skill to practise, water and protein targets, plus your own goals. Tick them off for EXP. Finish all of them for a perfect day bonus and keep your streak alive.
-- **Skill tree:** 22 skills in 3 branches (Push → Planche, Pull → Front Lever, Core & Legs → Human Flag). Each skill has stages with clear targets. Master a skill to unlock the next one.
-- **EXP and ranks:** level up and climb from E-Rank *Awakened* to S-Rank *Monarch*.
-- **Guided warm-up:** 8 moves, about 5 minutes, with a timer, pause and skip.
-- **Diet plan:** calories, protein, carbs, fat, water and meal ideas from your height, weight, age, sex, goal, activity and diet type (everything, vegetarian, vegan).
-- Everything is saved on the phone. No account needed.
+- **Skill Map:** a pan-and-zoom space map with 22 skills in 3 colour-coded branches (Push → Planche, Pull → Front Lever, Core & Legs → Human Flag) around your rank. Drag to move, pinch or use the buttons to zoom, tap a skill to see its next stage and tick it off.
+- **Layered illustrations:** every skill has its own athlete pose, built in layers (halo, disc, equipment, limbs, body, sparkles) that shift with the phone's tilt for a parallax effect.
+- **Daily quests:** warm-up, a Push / Pull / Legs workout rotation, a skill to practise, water and protein, plus your own quests. Finish them all to open the daily chest.
+- **Streaks and badges:** a 7-day streak strip, best streak, and 15 badges with celebrations.
+- **EXP and ranks:** level up from E-Rank *Awakened* to S-Rank *Monarch*.
+- **Guided warm-up:** 8 moves, about 5 minutes, with a timer.
+- **Diet plan:** calories, macros, water and meal ideas from your body data.
+- **Dark and light mode** in Settings, plus a vibration toggle. Everything is saved on the phone.
 
 ## Develop
 

@@ -2,11 +2,11 @@
   "expo": {
     "name": "Calisthenics Awakening",
     "slug": "calisthenics-awakening",
-    "version": "1.0.0",
+    "version": "0.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "calisawakening",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "backgroundColor": "#0A0D18",
     "ios": {
       "supportsTablet": true,
@@ -28,7 +28,13 @@
     },
     "plugins": [
       "expo-router",
-      "expo-system-ui"
+      "expo-system-ui",
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Used to tilt the illustrations for a parallax effect."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false

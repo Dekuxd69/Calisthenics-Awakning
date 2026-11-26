@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { SkillIllustration } from '../components/illustrations/SkillIllustration';
+import { LayeredArt } from '../components/art/LayeredArt';
 import { Screen } from '../components/Screen';
 import { Button, Card, Chip, Field } from '../components/ui';
 import {
@@ -17,9 +17,12 @@ import {
   type Sex,
 } from '../lib/profile';
 import { useStore } from '../store';
-import { colors, space, type } from '../theme';
+import { space, useStyles, useTheme, useType, type Palette } from '../theme';
 
 export default function Onboarding() {
+  const { c: colors } = useTheme();
+  const styles = useStyles(makeStyles);
+  const type = useType();
   const { state, dispatch } = useStore();
   const { edit } = useLocalSearchParams<{ edit?: string }>();
   const editing = edit === '1' && !!state.profile;
@@ -63,25 +66,14 @@ export default function Onboarding() {
   if (step === 0) {
     return (
       <Screen edges={['top', 'bottom']}>
-        <View style={{ alignItems: 'center', marginTop: space.lg }}>
-          <SkillIllustration branch="pull" height={200} />
+        <View style={styles.heroArt}>
+          <LayeredArt pose="frontLever" color="#38BDF8" size={150} sparkles depth={10} style={{ position: 'absolute', top: 0, left: 0 }} />
+          <LayeredArt pose="planche" color="#F97316" size={120} sparkles depth={6} style={{ position: 'absolute', top: 120, right: 0 }} />
+          <LayeredArt pose="humanFlag" color="#A78BFA" size={104} sparkles depth={14} style={{ position: 'absolute', top: 190, left: 30 }} />
         </View>
-        <Text style={[type.small, { color: colors.accent, marginTop: space.xl }]}>CALISTHENICS AWAKENING</Text>
-        <Text style={[type.display, { marginTop: space.sm }]}>Build real strength, one stage at a time.</Text>
-        <Text style={[type.dim, { marginTop: space.md }]}>No more random workouts. Follow a skill tree from your first push-up to the front lever, earn EXP for every stage you clear, and rank up from E to S.</Text>
-        <View style={{ marginTop: space.xl, gap: space.md }}>
-          {[
-            ['git-network', 'A skill tree with 22 skills across Push, Pull and Core'],
-            ['checkbox', 'Daily goals you tick off for EXP'],
-            ['flame', 'A guided warm-up before every session'],
-            ['nutrition', 'A diet plan built from your body data'],
-          ].map(([icon, text]) => (
-            <View key={text} style={styles.feature}>
-              <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={20} color={colors.primary} />
-              <Text style={[type.body, { flex: 1, marginLeft: space.md }]}>{text}</Text>
-            </View>
-          ))}
-        </View>
+        <Text style={[type.small, { color: colors.accent, marginTop: space.lg }]}>CALISTHENICS AWAKENING</Text>
+        <Text style={[type.display, { marginTop: space.sm }]}>Level up your body.</Text>
+        <Text style={[type.dim, { marginTop: space.sm }]}>Clear stages. Earn EXP. Rank up from E to S.</Text>
         <Button label="Get started" onPress={() => setStep(1)} style={{ marginTop: space.xxl }} testID="onboarding-start" />
       </Screen>
     );
@@ -101,8 +93,8 @@ export default function Onboarding() {
             <Ionicons name="chevron-back" size={22} color={colors.text} />
           </Pressable>
         </View>
-        <Text style={[type.h1, { marginTop: space.lg }]}>{editing ? 'Edit your body data' : 'Tell us about you'}</Text>
-        <Text style={[type.dim, { marginTop: 4, marginBottom: space.lg }]}>We use this to set your daily goals and build your diet plan. It stays on your phone.</Text>
+        <Text style={[type.h1, { marginTop: space.lg }]}>{editing ? 'Body data' : 'About you'}</Text>
+        <Text style={[type.dim, { marginTop: 4, marginBottom: space.lg }]}>For your quests and diet plan. Stays on your phone.</Text>
 
         <Card>
           <Field label="Name" value={name} onChangeText={setName} placeholder="What should we call you?" maxLength={24} error={showErrors ? errors.name : undefined} testID="field-name" />
@@ -133,9 +125,10 @@ export default function Onboarding() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   feature: { flexDirection: 'row', alignItems: 'center' },
   back: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
-  label: { ...type.dim, fontWeight: '600', marginBottom: space.sm },
+  label: { fontSize: 14, color: colors.textDim, fontWeight: '700', marginBottom: space.sm },
+  heroArt: { height: 300, marginTop: space.lg, width: '100%', maxWidth: 340, alignSelf: 'center' },
   formError: { color: colors.danger, marginTop: space.lg, textAlign: 'center' },
 });
