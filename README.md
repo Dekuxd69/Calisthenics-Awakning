@@ -29,14 +29,12 @@ npx tsc --noEmit        # type check
 
 ## Build and publish
 
-GitHub Actions (`.github/workflows/build.yml`) builds the Android APK and an unsigned iOS IPA. To publish a new version:
+GitHub Actions (`.github/workflows/build.yml`) builds the Android APK and an unsigned iOS IPA. To publish a new version, either:
 
-```bash
-git tag v0.2.0
-git push origin v0.2.0
-```
+- open **Actions → Build app → Run workflow** and type a tag such as `v0.2.0`, or
+- push a tag: `git tag v0.2.0 && git push origin v0.2.0`.
 
-The workflow attaches both files to a GitHub Release for that tag. You can also run it by hand from the Actions tab; the files then appear as run artifacts.
+Both attach the files to a GitHub Release for that tag. Running the workflow with no tag only builds; the files then appear as run artifacts.
 
 The APK is signed with the standard debug key, which is fine for sideloading. For the Play Store, set up a release keystore (for example with `eas build`).
 
