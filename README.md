@@ -11,8 +11,8 @@ Go to **[Releases](../../releases/latest)**:
 
 ## Features
 
-- **Skill Map:** a pan-and-zoom space map with 22 skills in 3 colour-coded branches (Push → Planche, Pull → Front Lever, Core & Legs → Human Flag) around your rank. Drag to move, pinch or use the buttons to zoom, tap a skill to see its next stage and tick it off.
-- **Layered illustrations:** every skill has its own athlete pose, built in layers (halo, disc, equipment, limbs, body, sparkles) that shift with the phone's tilt for a parallax effect.
+- **Skill path:** 22 skills on a winding Duolingo-style path, split into Push, Pull and Core and grouped into units (Push → Planche, Pull → Front Lever, Core & Legs → Human Flag). Tap a lesson to see its next stage and tick it off.
+- **Illustrations:** every skill has its own athlete pose. Hero art is built in layers that shift with the phone's tilt for a parallax effect. The trophy, chest, flame and coin art lives in `src/components/art/Illustrations.tsx`; to swap in your own PNGs, put them in `assets/illustrations/` and register them in the `CUSTOM` map at the top of that file.
 - **Daily quests:** warm-up, a Push / Pull / Legs workout rotation, a skill to practise, water and protein, plus your own quests. Finish them all to open the daily chest.
 - **Streaks and badges:** a 7-day streak strip, best streak, and 15 badges with celebrations.
 - **EXP and ranks:** level up from E-Rank *Awakened* to S-Rank *Monarch*.
@@ -43,7 +43,7 @@ The APK is signed with the standard debug key, which is fine for sideloading. Fo
 ## Project layout
 
 ```
-src/app/            screens (Expo Router): Today, Skills, Diet, Rank, skill detail, warm-up, onboarding
+src/app/            screens (Expo Router): Main, Skills, Diet, Profile, skill detail, warm-up, onboarding, settings
 src/components/     UI kit, rank badge, skill illustrations
 src/lib/            pure logic: EXP and ranks, skill tree, daily goals, diet, warm-up, app state
 ```

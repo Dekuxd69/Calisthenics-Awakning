@@ -2,20 +2,21 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
+import Svg, { Circle, Line, Path } from 'react-native-svg';
 import { Screen } from '../../components/Screen';
-import { Button, Card, IconButton, IconDisc, Label, Pill, T, tap } from '../../components/ui';
+import { Button, Card, IconButton, IconDisc, Pill, SectionHeader, T, tap } from '../../components/ui';
 import { buildDietPlan } from '../../lib/diet';
 import { GOAL_LABEL } from '../../lib/profile';
 import { useStore } from '../../store';
-import { radius, space, useTheme } from '../../theme';
+import { ff, radius, space, useTheme, type Palette } from '../../theme';
 
-const MACRO = { protein: '#F472B6', carbs: '#38BDF8', fat: '#FBBF24' };
+const macroColors = (c: Palette) => ({ protein: c.primary, carbs: c.text, fat: c.textFaint });
 const MEAL_ICON = { breakfast: 'sunny', lunch: 'restaurant', snack: 'nutrition', dinner: 'moon' } as const;
 
 function MacroRing({ p, cb, f, kcal }: { p: number; cb: number; f: number; kcal: number }) {
   const { c } = useTheme();
-  const size = 168;
+  const MACRO = macroColors(c);
+  const size = 180;
   const stroke = 16;
   const r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
@@ -51,8 +52,37 @@ function MacroRing({ p, cb, f, kcal }: { p: number; cb: number; f: number; kcal:
           return el;
         })}
       </Svg>
-      <Text style={{ color: c.text, fontSize: 32, fontWeight: '900', letterSpacing: -1 }}>{kcal.toLocaleString()}</Text>
-      <Text style={{ color: c.textFaint, fontWeight: '700', fontSize: 12 }}>KCAL / DAY</Text>
+      <Text style={{ color: c.text, fontSize: 38, fontFamily: ff.semibold, letterSpacing: -1.5 }}>{kcal.toLocaleString()}</Text>
+      <Text style={{ color: c.textFaint, fontFamily: ff.medium, fontSize: 12, letterSpacing: 0.6 }}>KCAL / DAY</Text>
+    </View>
+  );
+}
+
+/** Ruler gauge with the needle on your weight, like the weight picker in the reference. */
+function WeightRuler({ kg }: { kg: number }) {
+  const { c } = useTheme();
+  const w = 320;
+  const h = 64;
+  const step = 10; // px per kg
+  const center = Math.round(kg);
+  const ticks = [];
+  for (let v = center - 16; v <= center + 16; v++) {
+    const x = w / 2 + (v - kg) * step;
+    if (x < 0 || x > w) continue;
+    const major = v % 5 === 0;
+    ticks.push(<Line key={v} x1={x} y1={major ? 14 : 24} x2={x} y2={h - 18} stroke={c.textFaint} strokeOpacity={major ? 0.9 : 0.45} strokeWidth={major ? 2 : 1.4} strokeLinecap="round" />);
+  }
+  return (
+    <View style={{ alignItems: 'center' }}>
+      <Text style={{ color: c.text, fontFamily: ff.semibold, fontSize: 44, letterSpacing: -1.5 }}>
+        {kg}
+        <Text style={{ color: c.textFaint, fontSize: 18, fontFamily: ff.medium }}> kg</Text>
+      </Text>
+      <Svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet">
+        {ticks}
+        <Path d={`M${w / 2 - 7} 2 L${w / 2 + 7} 2 L${w / 2} 11 Z`} fill={c.primary} />
+        <Line x1={w / 2} y1={8} x2={w / 2} y2={h - 10} stroke={c.primary} strokeWidth={3.5} strokeLinecap="round" />
+      </Svg>
     </View>
   );
 }
@@ -60,6 +90,7 @@ function MacroRing({ p, cb, f, kcal }: { p: number; cb: number; f: number; kcal:
 export default function Diet() {
   const { state } = useStore();
   const { c } = useTheme();
+  const MACRO = macroColors(c);
   const profile = state.profile;
   const plan = useMemo(() => (profile ? buildDietPlan(profile) : null), [profile]);
   const [choice, setChoice] = useState<Record<string, number>>({});
@@ -86,7 +117,7 @@ export default function Diet() {
         <View>
           <T v="h1">Diet</T>
           <View style={{ marginTop: 6 }}>
-            <Pill text={GOAL_LABEL[profile.goal]} color={c.primary} icon="flag" />
+            <Pill text={GOAL_LABEL[profile.goal]} icon="flag" />
           </View>
         </View>
         <IconButton icon="create-outline" label="Edit body data" onPress={() => router.push('/onboarding?edit=1')} />
@@ -105,27 +136,31 @@ export default function Diet() {
         </View>
       </Card>
 
+      <Card style={{ marginTop: space.md, paddingHorizontal: space.md }}>
+        <WeightRuler kg={profile.weightKg} />
+      </Card>
+
       <View style={styles.tiles}>
         {[
-          { icon: 'water', value: `${plan.waterL} L`, label: 'Water', color: '#38BDF8' },
-          { icon: 'body', value: String(plan.bmi), label: plan.bmiLabel, color: c.primary },
-          { icon: 'flame', value: plan.tdee.toLocaleString(), label: 'Burn', color: '#F97316' },
+          { icon: 'water', value: `${plan.waterL} L`, label: 'Water' },
+          { icon: 'body', value: String(plan.bmi), label: plan.bmiLabel },
+          { icon: 'flame', value: plan.tdee.toLocaleString(), label: 'Burn' },
         ].map((t) => (
-          <View key={t.label} style={[styles.tile, { backgroundColor: c.surface, borderColor: c.border }]}>
-            <IconDisc icon={t.icon as 'water'} color={t.color} size={34} />
+          <View key={t.label} style={[styles.tile, { backgroundColor: c.surface }]}>
+            <IconDisc icon={t.icon as 'water'} size={36} />
             <Text style={[styles.tValue, { color: c.text }]}>{t.value}</Text>
             <Text style={[styles.tLabel, { color: c.textFaint }]}>{t.label}</Text>
           </View>
         ))}
       </View>
 
-      <Label style={{ marginTop: space.xl, marginBottom: space.md }}>Meals</Label>
+      <SectionHeader title="Meals" />
       <View style={{ gap: space.sm }}>
         {plan.meals.map((m) => {
           const idx = (choice[m.id] ?? 0) % m.options.length;
           const isOpen = open === m.id;
           return (
-            <View key={m.id} style={[styles.meal, { backgroundColor: c.surface, borderColor: isOpen ? c.primary + '66' : c.border }]}>
+            <View key={m.id} style={[styles.meal, { backgroundColor: c.surface, borderColor: isOpen ? c.primary : 'transparent' }]}>
               <Pressable
                 onPress={() => {
                   tap();
@@ -136,9 +171,9 @@ export default function Diet() {
                 accessibilityState={{ expanded: isOpen }}
                 testID={`meal-${m.id}`}
               >
-                <IconDisc icon={MEAL_ICON[m.id as keyof typeof MEAL_ICON] ?? 'restaurant'} color={c.primary} size={40} />
+                <IconDisc icon={MEAL_ICON[m.id as keyof typeof MEAL_ICON] ?? 'restaurant'} size={44} filled={isOpen} />
                 <View style={{ flex: 1, marginLeft: space.md }}>
-                  <T style={{ fontWeight: '800' }}>{m.name}</T>
+                  <T v="bodyStrong">{m.name}</T>
                   <T v="small" color="faint">
                     {m.calories} kcal · {m.proteinG}g protein
                   </T>
@@ -158,12 +193,12 @@ export default function Diet() {
                       tap();
                       setChoice((s) => ({ ...s, [m.id]: idx + 1 }));
                     }}
-                    style={[styles.swap, { backgroundColor: c.primarySoft }]}
+                    style={[styles.swap, { backgroundColor: c.primary }]}
                     accessibilityRole="button"
                     accessibilityLabel="Swap meal idea"
                   >
-                    <Ionicons name="shuffle" size={16} color={c.primary} />
-                    <Text style={{ color: c.primary, fontWeight: '800', fontSize: 13 }}>Swap</Text>
+                    <Ionicons name="shuffle" size={16} color={c.onPrimary} />
+                    <Text style={{ color: c.onPrimary, fontFamily: ff.semibold, fontSize: 13 }}>Swap</Text>
                   </Pressable>
                 </View>
               ) : null}
@@ -173,7 +208,7 @@ export default function Diet() {
       </View>
 
       <Card style={{ marginTop: space.lg, flexDirection: 'row', gap: space.md, padding: space.md }}>
-        <Ionicons name="bulb" size={20} color={c.warning} />
+        <Ionicons name="bulb" size={20} color={c.primaryText} />
         <T v="small" color="dim" style={{ flex: 1 }}>
           {plan.notes[0]}
         </T>
@@ -191,15 +226,15 @@ const styles = StyleSheet.create({
   macros: { flexDirection: 'row', marginTop: space.lg, alignSelf: 'stretch' },
   macro: { flex: 1, alignItems: 'center' },
   mDot: { width: 10, height: 10, borderRadius: 5, marginBottom: 6 },
-  mValue: { fontSize: 20, fontWeight: '900' },
-  mLabel: { fontSize: 12, fontWeight: '700' },
+  mValue: { fontSize: 20, fontFamily: ff.semibold },
+  mLabel: { fontSize: 12, fontFamily: ff.regular },
   tiles: { flexDirection: 'row', gap: space.sm, marginTop: space.md },
-  tile: { flex: 1, borderRadius: radius.md, borderWidth: 1, padding: space.md, alignItems: 'flex-start' },
-  tValue: { fontSize: 18, fontWeight: '900', marginTop: 8 },
-  tLabel: { fontSize: 12, fontWeight: '700' },
-  meal: { borderRadius: radius.md, borderWidth: 1 },
+  tile: { flex: 1, borderRadius: radius.md, padding: space.md, alignItems: 'flex-start' },
+  tValue: { fontSize: 20, fontFamily: ff.semibold, marginTop: 10 },
+  tLabel: { fontSize: 12, fontFamily: ff.regular },
+  meal: { borderRadius: radius.md, borderWidth: 1.5 },
   mealHead: { flexDirection: 'row', alignItems: 'center', padding: space.md },
   item: { flexDirection: 'row', alignItems: 'center', paddingVertical: 5 },
   bullet: { width: 6, height: 6, borderRadius: 3, marginRight: space.md },
-  swap: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginTop: space.sm, paddingHorizontal: 12, paddingVertical: 8, borderRadius: radius.pill },
+  swap: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginTop: space.sm, paddingHorizontal: 14, height: 36, borderRadius: radius.pill },
 });

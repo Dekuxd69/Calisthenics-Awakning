@@ -1,3 +1,9 @@
+import { Outfit_400Regular } from '@expo-google-fonts/outfit/400Regular';
+import { Outfit_500Medium } from '@expo-google-fonts/outfit/500Medium';
+import { Outfit_600SemiBold } from '@expo-google-fonts/outfit/600SemiBold';
+import { Outfit_700Bold } from '@expo-google-fonts/outfit/700Bold';
+import { Outfit_800ExtraBold } from '@expo-google-fonts/outfit/800ExtraBold';
+import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useMemo } from 'react';
@@ -32,15 +38,17 @@ function Navigator() {
 
 function Gate() {
   const { ready, state } = useStore();
+  const [fontsLoaded, fontError] = useFonts({ Outfit_400Regular, Outfit_500Medium, Outfit_600SemiBold, Outfit_700Bold, Outfit_800ExtraBold });
+  const loaded = ready && (fontsLoaded || !!fontError);
   return (
     <ThemeRoot mode={state.settings.theme}>
-      {ready ? (
+      {loaded ? (
         <ToastProvider>
           <Navigator />
         </ToastProvider>
       ) : (
-        <View style={{ flex: 1, backgroundColor: '#07090F', alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator color="#7C5CFF" size="large" />
+        <View style={{ flex: 1, backgroundColor: '#0A0A0A', alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator color="#C6F432" size="large" />
         </View>
       )}
     </ThemeRoot>

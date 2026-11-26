@@ -130,18 +130,18 @@ interface Props {
  * A round illustration built from stacked layers (halo, disc, equipment, far limbs, body, sparkles).
  * Each layer shifts a different amount when the phone tilts, which gives the parallax depth.
  */
-export function LayeredArt({ pose: poseId, color, size, state = 'done', depth = 6, sparkles = false, style, tilt: extra, surface = '#10141F' }: Props) {
+export function LayeredArt({ pose: poseId, color, size, state = 'done', depth = 6, sparkles = false, style, tilt: extra, surface = '#161616' }: Props) {
   const rawId = useId();
   const id = `a${rawId.replace(/[^a-zA-Z0-9]/g, '')}`;
   const deviceTilt = useTilt();
   const tilt = extra ?? deviceTilt;
   const pose = POSES[poseId];
   const locked = state === 'locked';
-  const base = locked ? '#5B6378' : color;
+  const base = locked ? '#3A3A3A' : color;
   const disc = state === 'done' ? base : surface;
-  const figure = state === 'done' ? '#FFFFFF' : locked ? '#7B8399' : shade(color, 0.25);
-  const far = state === 'done' ? 'rgba(255,255,255,0.55)' : locked ? 'rgba(123,131,153,0.5)' : shade(color, -0.25);
-  const propColor = state === 'done' ? 'rgba(255,255,255,0.6)' : locked ? 'rgba(123,131,153,0.55)' : shade(color, -0.1);
+  const figure = state === 'done' ? '#0A0A0A' : locked ? '#6B6B6B' : color;
+  const far = state === 'done' ? 'rgba(10,10,10,0.45)' : locked ? 'rgba(107,107,107,0.5)' : shade(color, -0.35);
+  const propColor = state === 'done' ? 'rgba(10,10,10,0.5)' : locked ? 'rgba(107,107,107,0.55)' : shade(color, -0.2);
 
   const layer = (d: number, children: React.ReactNode, key: string, viewBox = '0 0 100 100') => (
     <Animated.View key={key} pointerEvents="none" style={{ position: 'absolute', width: size, height: size, transform: depth ? parallax(tilt, d * depth) : [] }}>
@@ -179,7 +179,7 @@ export function LayeredArt({ pose: poseId, color, size, state = 'done', depth = 
             </LinearGradient>
           </Defs>
           <Circle cx={50} cy={50} r={40} fill={`url(#${id}d)`} stroke={state === 'open' ? base : 'none'} strokeWidth={2.5} strokeOpacity={0.9} />
-          <Circle cx={50} cy={50} r={34} fill="none" stroke={state === 'done' ? '#FFFFFF' : base} strokeOpacity={0.14} strokeWidth={1.2} />
+          <Circle cx={50} cy={50} r={34} fill="none" stroke={state === 'done' ? '#0A0A0A' : base} strokeOpacity={0.14} strokeWidth={1.2} />
         </>,
         'disc',
       )}

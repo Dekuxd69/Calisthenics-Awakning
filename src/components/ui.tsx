@@ -1,9 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Platform, Pressable, Text, TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
-import { font, radius, space, useStyles, useTheme, type Palette } from '../theme';
+import { Platform, Pressable, Text, TextInput, View, type StyleProp, type TextInputProps, type TextStyle, type ViewStyle } from 'react-native';
+import { ff, font, radius, space, useTheme } from '../theme';
 
 let hapticsOn = true;
 export function setHapticsEnabled(on: boolean) {
@@ -22,27 +21,42 @@ export function tap(kind: 'light' | 'success' | 'heavy' = 'light') {
 
 export type IconName = keyof typeof Ionicons.glyphMap;
 
-export function Card({ children, style }: { children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
-  const s = useStyles(styles);
-  return <View style={[s.card, style]}>{children}</View>;
-}
-
-export function Label({ children, color, style }: { children: React.ReactNode; color?: string; style?: StyleProp<ViewStyle> }) {
+/** Text in the app font. `color`: dim | faint | lime | any colour. */
+export function T({
+  children,
+  v = 'body',
+  color,
+  center,
+  style,
+  lines,
+}: {
+  children: React.ReactNode;
+  v?: keyof typeof font;
+  color?: 'dim' | 'faint' | 'lime' | string;
+  center?: boolean;
+  style?: StyleProp<TextStyle>;
+  lines?: number;
+}) {
   const { c } = useTheme();
-  return (
-    <View style={style}>
-      <Text style={[font.label, { color: color ?? c.textFaint, textTransform: 'uppercase' }]}>{children}</Text>
-    </View>
-  );
-}
-
-export function T({ children, v = 'body', color, center, style, lines }: { children: React.ReactNode; v?: keyof typeof font; color?: 'dim' | 'faint' | string; center?: boolean; style?: object; lines?: number }) {
-  const { c } = useTheme();
-  const col = color === 'dim' ? c.textDim : color === 'faint' ? c.textFaint : (color ?? c.text);
+  const col = color === 'dim' ? c.textDim : color === 'faint' ? c.textFaint : color === 'lime' ? c.primaryText : (color ?? c.text);
   return (
     <Text numberOfLines={lines} style={[font[v], { color: col }, center && { textAlign: 'center' }, style]}>
       {children}
     </Text>
+  );
+}
+
+export function Card({ children, style }: { children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
+  const { c } = useTheme();
+  return <View style={[{ backgroundColor: c.surface, borderRadius: radius.lg, padding: space.lg }, style]}>{children}</View>;
+}
+
+export function SectionHeader({ title, right, style }: { title: string; right?: React.ReactNode; style?: StyleProp<ViewStyle> }) {
+  return (
+    <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: space.xl, marginBottom: space.md }, style]}>
+      <T v="h2">{title}</T>
+      {right}
+    </View>
   );
 }
 
@@ -54,20 +68,13 @@ type ButtonProps = {
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   testID?: string;
-  color?: string;
 };
 
-export function Button({ label, onPress, variant = 'primary', icon, disabled, style, testID, color }: ButtonProps) {
+/** Pill button. Primary is lime with black text. */
+export function Button({ label, onPress, variant = 'primary', icon, disabled, style, testID }: ButtonProps) {
   const { c } = useTheme();
-  const s = useStyles(styles);
-  const fg = variant === 'primary' ? '#FFFFFF' : variant === 'danger' ? c.danger : variant === 'ghost' ? c.textDim : c.text;
-  const content = (
-    <View style={s.btnInner}>
-      {icon ? <Ionicons name={icon} size={19} color={fg} /> : null}
-      <Text style={[s.btnLabel, { color: fg }]}>{label}</Text>
-    </View>
-  );
-  const main = color ?? c.primary;
+  const bg = variant === 'primary' ? c.primary : variant === 'secondary' ? c.surfaceHigh : variant === 'danger' ? c.dangerSoft : 'transparent';
+  const fg = variant === 'primary' ? c.onPrimary : variant === 'danger' ? c.danger : variant === 'ghost' ? c.textDim : c.text;
   return (
     <Pressable
       testID={testID}
@@ -79,20 +86,20 @@ export function Button({ label, onPress, variant = 'primary', icon, disabled, st
         tap();
         onPress();
       }}
-      style={({ pressed }) => [s.btn, variant === 'secondary' && s.secondary, variant === 'danger' && s.danger, disabled && { opacity: 0.4 }, pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }, style]}
+      style={({ pressed }) => [
+        { minHeight: 56, borderRadius: radius.pill, backgroundColor: bg, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, paddingHorizontal: space.xl },
+        disabled && { opacity: 0.4 },
+        pressed && { transform: [{ scale: 0.97 }], opacity: 0.9 },
+        style,
+      ]}
     >
-      {variant === 'primary' ? (
-        <LinearGradient colors={[main, main]} style={[s.btnGradient, { borderBottomWidth: 4, borderBottomColor: 'rgba(0,0,0,0.25)' }]}>
-          {content}
-        </LinearGradient>
-      ) : (
-        content
-      )}
+      {icon ? <Ionicons name={icon} size={19} color={fg} /> : null}
+      <Text style={{ color: fg, fontFamily: ff.semibold, fontSize: 16 }}>{label}</Text>
     </Pressable>
   );
 }
 
-export function IconButton({ icon, onPress, label, size = 44, testID }: { icon: IconName; onPress: () => void; label: string; size?: number; testID?: string }) {
+export function IconButton({ icon, onPress, label, size = 44, testID, filled }: { icon: IconName; onPress: () => void; label: string; size?: number; testID?: string; filled?: boolean }) {
   const { c } = useTheme();
   return (
     <Pressable
@@ -104,28 +111,57 @@ export function IconButton({ icon, onPress, label, size = 44, testID }: { icon: 
       hitSlop={8}
       accessibilityRole="button"
       accessibilityLabel={label}
-      style={({ pressed }) => ({ width: size, height: size, borderRadius: size / 2, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.7 : 1 })}
+      style={({ pressed }) => ({ width: size, height: size, borderRadius: size / 2, backgroundColor: filled ? c.primary : c.surface, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.7 : 1 })}
     >
-      <Ionicons name={icon} size={size * 0.46} color={c.text} />
+      <Ionicons name={icon} size={size * 0.46} color={filled ? c.onPrimary : c.text} />
     </Pressable>
   );
 }
 
-export function ProgressBar({ value, color, height = 8 }: { value: number; color?: string; height?: number }) {
+export function ProgressBar({ value, color, height = 8, track }: { value: number; color?: string; height?: number; track?: string }) {
   const { c } = useTheme();
   const pct = Math.max(0, Math.min(1, value)) * 100;
   return (
-    <View style={{ height, backgroundColor: c.surfaceHigh, borderRadius: height, overflow: 'hidden' }}>
+    <View style={{ height, backgroundColor: track ?? c.surfaceHigh, borderRadius: height, overflow: 'hidden' }}>
       <View style={{ width: `${pct}%`, height: '100%', backgroundColor: color ?? c.primary, borderRadius: height }} />
     </View>
   );
 }
 
+/** Segmented pill selector, like the Weight / Body Fat switch in the reference. */
+export function Segmented<T extends string>({ options, value, onChange, testIDPrefix }: { options: { value: T; label: string; icon?: IconName }[]; value: T; onChange: (v: T) => void; testIDPrefix?: string }) {
+  const { c } = useTheme();
+  return (
+    <View style={{ flexDirection: 'row', backgroundColor: c.surface, borderRadius: radius.pill, padding: 4, gap: 4 }} accessibilityRole="tablist">
+      {options.map((o) => {
+        const active = o.value === value;
+        return (
+          <Pressable
+            key={o.value}
+            testID={testIDPrefix ? `${testIDPrefix}-${o.value}` : undefined}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active }}
+            accessibilityLabel={o.label}
+            onPress={() => {
+              tap();
+              onChange(o.value);
+            }}
+            style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 44, borderRadius: radius.pill, backgroundColor: active ? c.primary : 'transparent' }}
+          >
+            {o.icon ? <Ionicons name={o.icon} size={16} color={active ? c.onPrimary : c.textDim} /> : null}
+            <Text style={{ fontFamily: ff.semibold, fontSize: 14, color: active ? c.onPrimary : c.textDim }}>{o.label}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/** Wrapping choice chips for forms. */
 export function Chip<T extends string>({ options, value, onChange }: { options: { value: T; label: string; icon?: IconName }[]; value: T; onChange: (v: T) => void }) {
   const { c } = useTheme();
-  const s = useStyles(styles);
   return (
-    <View style={s.chips}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.sm }}>
       {options.map((o) => {
         const active = o.value === value;
         return (
@@ -138,10 +174,10 @@ export function Chip<T extends string>({ options, value, onChange }: { options: 
               tap();
               onChange(o.value);
             }}
-            style={[s.chip, active && { backgroundColor: c.primarySoft, borderColor: c.primary }]}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, height: 44, borderRadius: radius.pill, backgroundColor: active ? c.primary : c.surface }}
           >
-            {o.icon ? <Ionicons name={o.icon} size={16} color={active ? c.primary : c.textDim} /> : null}
-            <Text style={[s.chipText, active && { color: c.text }]}>{o.label}</Text>
+            {o.icon ? <Ionicons name={o.icon} size={16} color={active ? c.onPrimary : c.textDim} /> : null}
+            <Text style={{ fontFamily: ff.medium, fontSize: 14, color: active ? c.onPrimary : c.textDim }}>{o.label}</Text>
           </Pressable>
         );
       })}
@@ -149,53 +185,58 @@ export function Chip<T extends string>({ options, value, onChange }: { options: 
   );
 }
 
-export function Field({ label, error, suffix, ...props }: TextInputProps & { label: string; error?: string; suffix?: string }) {
+/** Big-number input tile, like the Age / Height tiles in the reference. */
+export function NumberTile({ label, unit, error, ...props }: TextInputProps & { label: string; unit?: string; error?: string }) {
   const { c } = useTheme();
-  const s = useStyles(styles);
+  return (
+    <View style={{ flex: 1 }}>
+      <View style={{ backgroundColor: c.surface, borderRadius: radius.md, padding: space.md, borderWidth: 1.5, borderColor: error ? c.danger : 'transparent' }}>
+        <Text style={{ color: c.textFaint, fontFamily: ff.medium, fontSize: 12, letterSpacing: 0.6 }}>{label.toUpperCase()}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+          <TextInput
+            placeholderTextColor={c.textFaint}
+            accessibilityLabel={label}
+            style={{ flex: 1, color: c.text, fontFamily: ff.semibold, fontSize: 34, paddingVertical: 4, minWidth: 0 }}
+            {...props}
+          />
+          {unit ? <Text style={{ color: c.textFaint, fontFamily: ff.medium, fontSize: 14, marginBottom: 10 }}>{unit}</Text> : null}
+        </View>
+      </View>
+      {error ? <Text style={{ color: c.danger, fontFamily: ff.regular, fontSize: 12, marginTop: 4 }}>{error}</Text> : null}
+    </View>
+  );
+}
+
+export function Field({ label, error, ...props }: TextInputProps & { label: string; error?: string }) {
+  const { c } = useTheme();
   return (
     <View style={{ marginBottom: space.md }}>
-      <Text style={s.fieldLabel}>{label}</Text>
-      <View style={[s.inputWrap, !!error && { borderColor: c.danger }]}>
-        <TextInput placeholderTextColor={c.textFaint} style={s.input} accessibilityLabel={label} {...props} />
-        {suffix ? <Text style={s.suffix}>{suffix}</Text> : null}
+      <View style={{ backgroundColor: c.surface, borderRadius: radius.md, paddingHorizontal: space.lg, paddingTop: space.md, borderWidth: 1.5, borderColor: error ? c.danger : 'transparent' }}>
+        <Text style={{ color: c.textFaint, fontFamily: ff.medium, fontSize: 12, letterSpacing: 0.6 }}>{label.toUpperCase()}</Text>
+        <TextInput placeholderTextColor={c.textFaint} accessibilityLabel={label} style={{ color: c.text, fontFamily: ff.semibold, fontSize: 20, paddingVertical: 10 }} {...props} />
       </View>
-      {error ? <Text style={s.error}>{error}</Text> : null}
+      {error ? <Text style={{ color: c.danger, fontFamily: ff.regular, fontSize: 12, marginTop: 4 }}>{error}</Text> : null}
     </View>
   );
 }
 
-export function Pill({ text, color, icon }: { text: string; color: string; icon?: IconName }) {
+export function Pill({ text, icon, tone = 'lime' }: { text: string; icon?: IconName; tone?: 'lime' | 'plain' }) {
+  const { c } = useTheme();
+  const lime = tone === 'lime';
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: color + '24', alignSelf: 'flex-start' }}>
-      {icon ? <Ionicons name={icon} size={13} color={color} /> : null}
-      <Text style={{ color, fontSize: 12, fontWeight: '800', letterSpacing: 0.3 }}>{text}</Text>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, height: 32, borderRadius: radius.pill, backgroundColor: lime ? c.primary : c.surface, alignSelf: 'flex-start' }}>
+      {icon ? <Ionicons name={icon} size={14} color={lime ? c.onPrimary : c.primaryText} /> : null}
+      <Text style={{ color: lime ? c.onPrimary : c.text, fontFamily: ff.semibold, fontSize: 13 }}>{text}</Text>
     </View>
   );
 }
 
-/** A round icon on a tinted disc, for lists and badges. */
-export function IconDisc({ icon, color, size = 40, filled }: { icon: IconName; color: string; size?: number; filled?: boolean }) {
+/** Round icon on a soft disc. */
+export function IconDisc({ icon, size = 40, filled, color }: { icon: IconName; size?: number; filled?: boolean; color?: string }) {
+  const { c } = useTheme();
   return (
-    <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: filled ? color : color + '24', alignItems: 'center', justifyContent: 'center' }}>
-      <Ionicons name={icon} size={size * 0.5} color={filled ? '#FFFFFF' : color} />
+    <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: filled ? c.primary : c.surfaceHigh, alignItems: 'center', justifyContent: 'center' }}>
+      <Ionicons name={icon} size={size * 0.48} color={filled ? c.onPrimary : (color ?? c.primaryText)} />
     </View>
   );
 }
-
-const styles = (c: Palette) => ({
-  card: { backgroundColor: c.surface, borderRadius: radius.lg, padding: space.lg, borderWidth: 1, borderColor: c.border },
-  btn: { borderRadius: radius.md, overflow: 'hidden' as const, minHeight: 54, justifyContent: 'center' as const },
-  btnGradient: { minHeight: 54, justifyContent: 'center' as const, paddingHorizontal: space.lg },
-  btnInner: { flexDirection: 'row' as const, alignItems: 'center' as const, justifyContent: 'center' as const, gap: space.sm, paddingHorizontal: space.lg },
-  btnLabel: { fontWeight: '800' as const, fontSize: 16, letterSpacing: 0.2 },
-  secondary: { backgroundColor: c.surfaceHigh, borderWidth: 1, borderColor: c.border },
-  danger: { backgroundColor: c.dangerSoft, borderWidth: 1, borderColor: c.danger + '55' },
-  chips: { flexDirection: 'row' as const, flexWrap: 'wrap' as const, gap: space.sm },
-  chip: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 6, paddingHorizontal: 14, paddingVertical: 11, borderRadius: radius.pill, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border },
-  chipText: { color: c.textDim, fontWeight: '700' as const, fontSize: 14 },
-  fieldLabel: { color: c.textDim, fontSize: 13, fontWeight: '700' as const, marginBottom: 6 },
-  inputWrap: { flexDirection: 'row' as const, alignItems: 'center' as const, backgroundColor: c.surfaceHigh, borderRadius: radius.md, borderWidth: 1, borderColor: c.border, paddingHorizontal: space.lg },
-  input: { flex: 1, color: c.text, fontSize: 17, fontWeight: '600' as const, paddingVertical: 14 },
-  suffix: { color: c.textFaint, fontWeight: '700' as const },
-  error: { color: c.danger, fontSize: 13, marginTop: 6 },
-});
