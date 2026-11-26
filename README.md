@@ -4,10 +4,21 @@ Learn calisthenics step by step instead of by trial and error. One app for **And
 
 ## Download
 
-Go to **[Releases](../../releases/latest)**:
+<p align="center">
+  <a href="https://github.com/Dekuxd69/Calisthenics-Awakning/releases/latest/download/CalisthenicsAwakening.apk"><img alt="Download APK for Android" src="https://img.shields.io/badge/Download%20APK-Android-C6F432?style=for-the-badge&logo=android&logoColor=0A0A0A&labelColor=0A0A0A" height="56"></a>
+</p>
 
-- **Android:** download `CalisthenicsAwakening-<version>.apk`, open it on your phone and allow *Install unknown apps* when asked.
-- **iPhone:** download `CalisthenicsAwakening-<version>-unsigned.ipa`. Apple only runs signed apps, so sign it with your own Apple ID using [Sideloadly](https://sideloadly.io) (Windows/Mac) or [AltStore](https://altstore.io). With a free Apple ID the app must be re-signed every 7 days. A paid Apple Developer account ($99/year) removes that limit and allows TestFlight.
+**Direct link (always the newest version):** https://github.com/Dekuxd69/Calisthenics-Awakning/releases/latest/download/CalisthenicsAwakening.apk
+
+Download page: https://dekuxd69.github.io/Calisthenics-Awakning/
+
+### Install on Android
+1. Open the link above on your phone and download the APK.
+2. Tap the downloaded file. If asked, allow **Install unknown apps** for your browser or file manager.
+3. Tap **Install**, then **Open**. Updating later: install the new APK over the old one and your progress stays.
+
+### iPhone
+Download `CalisthenicsAwakening-<version>-unsigned.ipa` from **[Releases](../../releases/latest)**. Apple only runs signed apps, so sign it with your own Apple ID using [Sideloadly](https://sideloadly.io) (Windows/Mac) or [AltStore](https://altstore.io). With a free Apple ID the app must be re-signed every 7 days. A paid Apple Developer account ($99/year) removes that limit and allows TestFlight.
 
 ## Features
 
