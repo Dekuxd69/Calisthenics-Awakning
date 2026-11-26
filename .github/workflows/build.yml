@@ -62,6 +62,8 @@ jobs:
         run: |
           mkdir -p dist
           cp android/app/build/outputs/apk/release/app-release.apk "dist/CalisthenicsAwakening-${{ env.VERSION_NAME }}.apk"
+          # Same file with a fixed name, so releases/latest/download/CalisthenicsAwakening.apk always works.
+          cp android/app/build/outputs/apk/release/app-release.apk dist/CalisthenicsAwakening.apk
       - uses: actions/upload-artifact@v4
         with:
           name: android-apk
