@@ -116,7 +116,7 @@ function SkillNode({ skill, color }: { skill: Skill; color: string }) {
         styles.node,
         mastered && { borderColor: colors.success, backgroundColor: colors.successSoft },
         !locked && !mastered && { borderColor: color + '88' },
-        locked && { opacity: 0.6 },
+        locked && { opacity: 0.8 },
         pressed && { transform: [{ scale: 0.98 }] },
       ]}
     >

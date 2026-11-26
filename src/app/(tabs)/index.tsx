@@ -94,6 +94,7 @@ export default function Today() {
               {level.current} / {level.needed} EXP to level {level.level + 1}
             </Text>
           </View>
+          <Ionicons name="chevron-forward" size={20} color={colors.textFaint} style={{ marginLeft: space.sm }} />
         </Card>
       </Pressable>
 

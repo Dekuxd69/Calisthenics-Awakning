@@ -132,7 +132,7 @@ export default function SkillDetail() {
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: isDone, disabled: !isNext && !isLastDone }}
                 accessibilityLabel={`${st.name}, ${st.target}`}
-                style={[styles.stage, isDone && styles.stageDone, isNext && { borderColor: branch.color }, !isDone && !isNext && { opacity: 0.5 }]}
+                style={[styles.stage, isDone && styles.stageDone, isNext && { borderColor: branch.color }, !isDone && !isNext && { opacity: 0.7 }]}
               >
                 <View style={{ flex: 1 }}>
                   <Text style={styles.stageName}>{st.name}</Text>

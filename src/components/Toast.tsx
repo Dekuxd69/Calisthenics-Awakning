@@ -42,7 +42,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <Ctx.Provider value={show}>
       {children}
       {msg ? (
-        <View pointerEvents="none" style={[StyleSheet.absoluteFill, { justifyContent: 'flex-start', alignItems: 'center', paddingTop: insets.top + 10 }]}>
+        <View pointerEvents="none" style={[StyleSheet.absoluteFill, { justifyContent: 'flex-start', alignItems: 'center', paddingTop: insets.top + 64 }]}>
           <Animated.View
             accessibilityLiveRegion="polite"
             style={[
