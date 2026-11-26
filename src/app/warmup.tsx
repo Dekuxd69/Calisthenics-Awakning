@@ -8,11 +8,12 @@ import { useToast } from '../components/Toast';
 import { Button, Card, tap } from '../components/ui';
 import { formatSeconds, WARMUP, WARMUP_TOTAL_SECONDS } from '../lib/warmup';
 import { useStore } from '../store';
-import { colors, radius, space, type } from '../theme';
+import { radius, space, useStyles, useTheme, useType, type Palette } from '../theme';
 
 type Phase = 'intro' | 'running' | 'paused' | 'done';
 
 function Ring({ progress, size = 220 }: { progress: number; size?: number }) {
+  const { c: colors } = useTheme();
   const stroke = 14;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
@@ -36,6 +37,9 @@ function Ring({ progress, size = 220 }: { progress: number; size?: number }) {
 }
 
 export default function Warmup() {
+  const { c: colors } = useTheme();
+  const styles = useStyles(makeStyles);
+  const type = useType();
   const { dispatch, goals, today, state } = useStore();
   const toast = useToast();
   const [phase, setPhase] = useState<Phase>('intro');
@@ -104,9 +108,7 @@ export default function Warmup() {
       {phase === 'intro' ? (
         <>
           <Text style={[type.display, { marginTop: space.lg }]}>Prime your body</Text>
-          <Text style={[type.dim, { marginTop: space.sm }]}>
-            {WARMUP.length} moves that wake up your wrists, shoulders, spine and hips. Warming up cuts injury risk and makes your first sets stronger.
-          </Text>
+          <Text style={[type.dim, { marginTop: space.sm }]}>{WARMUP.length} moves · {Math.round(WARMUP_TOTAL_SECONDS / 60)} min · +20 EXP</Text>
           <Card style={{ marginTop: space.lg, padding: space.sm }}>
             {WARMUP.map((m, i) => (
               <View key={m.id} style={[styles.listRow, i > 0 && { borderTopWidth: 1, borderTopColor: colors.border }]}>
@@ -127,7 +129,7 @@ export default function Warmup() {
             <Ionicons name="checkmark" size={56} color="#06101A" />
           </View>
           <Text style={[type.display, { marginTop: space.xl, textAlign: 'center' }]}>You are warmed up</Text>
-          <Text style={[type.dim, { marginTop: space.sm, textAlign: 'center' }]}>Your warm-up goal is ticked off. Now go train while your body is ready.</Text>
+          <Text style={[type.dim, { marginTop: space.sm, textAlign: 'center' }]}>Quest complete. Go train.</Text>
           <Button label="Back to today" onPress={close} style={{ marginTop: space.xl, alignSelf: 'stretch' }} />
           <Button label="See skill tree" variant="secondary" onPress={() => router.replace('/skills')} style={{ marginTop: space.sm, alignSelf: 'stretch' }} />
         </View>
@@ -175,7 +177,7 @@ export default function Warmup() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: Palette) => StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   iconBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
   listRow: { flexDirection: 'row', alignItems: 'center', padding: space.md },

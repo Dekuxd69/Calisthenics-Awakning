@@ -56,13 +56,13 @@ function trainingGoal(focus: DayFocus, level: number): DailyGoal {
   const bump = Math.min(10, Math.floor((level - 1) / 2));
   switch (focus) {
     case 'push':
-      return { id: 'train', kind: 'train', title: 'Push workout', detail: `4 rounds: ${6 + bump} push-ups · ${5 + bump} pike push-ups · 30 s plank`, xp: 40 };
+      return { id: 'train', kind: 'train', title: 'Push workout', detail: `4× ${6 + bump} push-ups · ${5 + bump} pike · 30s plank`, xp: 40 };
     case 'pull':
-      return { id: 'train', kind: 'train', title: 'Pull workout', detail: `4 rounds: ${8 + bump} rows · ${20 + bump * 2} s dead hang · ${8 + bump} scapular pulls`, xp: 40 };
+      return { id: 'train', kind: 'train', title: 'Pull workout', detail: `4× ${8 + bump} rows · ${20 + bump * 2}s hang · ${8 + bump} scap pulls`, xp: 40 };
     case 'legs':
-      return { id: 'train', kind: 'train', title: 'Legs & core workout', detail: `4 rounds: ${15 + bump} squats · ${8 + bump} lunges each leg · ${20 + bump * 2} s hollow hold`, xp: 40 };
+      return { id: 'train', kind: 'train', title: 'Legs & core workout', detail: `4× ${15 + bump} squats · ${8 + bump} lunges · ${20 + bump * 2}s hollow`, xp: 40 };
     default:
-      return { id: 'train', kind: 'train', title: 'Mobility & walk', detail: '20 min walk plus 10 min stretching. Recovery is training too.', xp: 25 };
+      return { id: 'train', kind: 'train', title: 'Walk & stretch', detail: '20 min walk · 10 min stretch', xp: 25 };
   }
 }
 
@@ -94,7 +94,7 @@ export function generateGoals(opts: {
 }): DailyGoal[] {
   const focus = dayFocus(opts.date);
   const goals: DailyGoal[] = [
-    { id: 'warmup', kind: 'warmup', title: 'Warm up', detail: '5 minute guided warm-up before you train', xp: 20 },
+    { id: 'warmup', kind: 'warmup', title: 'Warm up', detail: '5 min guided', xp: 20 },
     trainingGoal(focus, opts.level),
   ];
   const skill = practiceSkill(opts.progress, focus);
@@ -103,20 +103,25 @@ export function generateGoals(opts: {
     goals.push({
       id: 'skill',
       kind: 'skill',
-      title: `Practise: ${skill.name}`,
-      detail: stage ? `Work towards ${stage.name.toLowerCase()} · ${stage.target}` : skill.description,
+      title: skill.name,
+      detail: stage ? `${stage.name} · ${stage.target}` : skill.name,
       xp: 30,
     });
   }
   if (opts.profile) {
     const plan = buildDietPlan(opts.profile);
-    goals.push({ id: 'water', kind: 'water', title: `Drink ${plan.waterL} L of water`, detail: 'Spread it across the day', xp: 10 });
-    goals.push({ id: 'protein', kind: 'protein', title: `Eat ${plan.proteinG} g of protein`, detail: 'Your muscles grow from it. See your diet plan.', xp: 15 });
+    goals.push({ id: 'water', kind: 'water', title: `Drink ${plan.waterL} L water`, detail: 'Through the day', xp: 10 });
+    goals.push({ id: 'protein', kind: 'protein', title: `Eat ${plan.proteinG} g protein`, detail: 'See your diet plan', xp: 15 });
   }
   for (const c of opts.custom) {
-    goals.push({ id: `custom:${c.id}`, kind: 'custom', title: c.title, detail: 'Your own goal', xp: 10 });
+    goals.push({ id: `custom:${c.id}`, kind: 'custom', title: c.title, detail: 'Your goal', xp: 10 });
   }
   return goals;
 }
 
-export const PERFECT_DAY_BONUS = 30;
+/** Bonus EXP from the daily chest, which opens once every quest is done. Varies by day so it feels like a reward. */
+export function chestXp(date: string): number {
+  let h = 0;
+  for (const ch of date) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return 25 + (h % 6) * 5;
+}
