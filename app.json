@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Calisthenics Awakening",
+    "slug": "calisthenics-awakening",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "calisawakening",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0A0D18",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.dekuxd69.calisthenicsawakening"
+    },
+    "android": {
+      "package": "com.dekuxd69.calisthenicsawakening",
+      "adaptiveIcon": {
+        "backgroundColor": "#0A0D18",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-system-ui"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}
