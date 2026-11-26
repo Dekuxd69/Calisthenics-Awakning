@@ -2,36 +2,44 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
+import Svg, { Line, Path } from 'react-native-svg';
 import { Screen } from '../components/Screen';
 import { useToast } from '../components/Toast';
-import { Button, Card, tap } from '../components/ui';
+import { Illustration } from '../components/art/Illustrations';
+import { Button, Card, IconButton, T, tap } from '../components/ui';
 import { formatSeconds, WARMUP, WARMUP_TOTAL_SECONDS } from '../lib/warmup';
 import { useStore } from '../store';
-import { radius, space, useStyles, useTheme, useType, type Palette } from '../theme';
+import { ff, radius, space, useStyles, useTheme, type Palette } from '../theme';
 
 type Phase = 'intro' | 'running' | 'paused' | 'done';
 
-function Ring({ progress, size = 220 }: { progress: number; size?: number }) {
+/** 270 degree arc gauge with tick marks, like the timer in the reference. */
+function Arc({ progress, size = 260 }: { progress: number; size?: number }) {
   const { c: colors } = useTheme();
-  const stroke = 14;
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
+  const stroke = 16;
+  const r = (size - stroke) / 2 - 10;
+  const cx = size / 2;
+  const sweep = 270;
+  const p = Math.max(0, Math.min(1, progress));
+  const pt = (deg: number, rad: number) => {
+    const a = ((deg - 225) * Math.PI) / 180;
+    return [cx + rad * Math.cos(a), cx + rad * Math.sin(a)];
+  };
+  const arc = (from: number, to: number) => {
+    const [x0, y0] = pt(from, r);
+    const [x1, y1] = pt(to, r);
+    return `M${x0} ${y0} A${r} ${r} 0 ${to - from > 180 ? 1 : 0} 1 ${x1} ${y1}`;
+  };
+  const ticks = Array.from({ length: 28 }, (_, i) => (i / 27) * sweep);
   return (
     <Svg width={size} height={size}>
-      <Circle cx={size / 2} cy={size / 2} r={r} stroke={colors.surfaceHigh} strokeWidth={stroke} fill="none" />
-      <Circle
-        cx={size / 2}
-        cy={size / 2}
-        r={r}
-        stroke={colors.primary}
-        strokeWidth={stroke}
-        fill="none"
-        strokeLinecap="round"
-        strokeDasharray={`${c} ${c}`}
-        strokeDashoffset={c * (1 - Math.max(0, Math.min(1, progress)))}
-        transform={`rotate(-90 ${size / 2} ${size / 2})`}
-      />
+      {ticks.map((t) => {
+        const [x0, y0] = pt(t, r + 14);
+        const [x1, y1] = pt(t, r + 20);
+        return <Line key={t} x1={x0} y1={y0} x2={x1} y2={y1} stroke={t / sweep <= p ? colors.primary : colors.muted} strokeWidth={2} strokeLinecap="round" />;
+      })}
+      <Path d={arc(0, sweep)} stroke={colors.surfaceHigh} strokeWidth={stroke} fill="none" strokeLinecap="round" />
+      {p > 0.005 ? <Path d={arc(0, Math.max(1, sweep * p))} stroke={colors.primary} strokeWidth={stroke} fill="none" strokeLinecap="round" /> : null}
     </Svg>
   );
 }
@@ -39,7 +47,6 @@ function Ring({ progress, size = 220 }: { progress: number; size?: number }) {
 export default function Warmup() {
   const { c: colors } = useTheme();
   const styles = useStyles(makeStyles);
-  const type = useType();
   const { dispatch, goals, today, state } = useStore();
   const toast = useToast();
   const [phase, setPhase] = useState<Phase>('intro');
@@ -98,17 +105,24 @@ export default function Warmup() {
   return (
     <Screen edges={['top', 'bottom']}>
       <View style={styles.top}>
-        <Pressable onPress={close} hitSlop={10} accessibilityRole="button" accessibilityLabel="Close warm-up" style={styles.iconBtn}>
-          <Ionicons name="close" size={22} color={colors.text} />
-        </Pressable>
-        <Text style={type.small}>WARM-UP · {formatSeconds(WARMUP_TOTAL_SECONDS)}</Text>
-        <View style={{ width: 40 }} />
+        <IconButton icon="close" label="Close warm-up" onPress={close} />
+        <T v="label" color="faint">
+          WARM-UP · {formatSeconds(WARMUP_TOTAL_SECONDS)}
+        </T>
+        <View style={{ width: 44 }} />
       </View>
 
       {phase === 'intro' ? (
         <>
-          <Text style={[type.display, { marginTop: space.lg }]}>Prime your body</Text>
-          <Text style={[type.dim, { marginTop: space.sm }]}>{WARMUP.length} moves · {Math.round(WARMUP_TOTAL_SECONDS / 60)} min · +20 EXP</Text>
+          <View style={styles.introRow}>
+            <View style={{ flex: 1 }}>
+              <T v="display">Prime your body</T>
+              <T color="dim" style={{ marginTop: space.sm }}>
+                {WARMUP.length} moves · {Math.round(WARMUP_TOTAL_SECONDS / 60)} min · +20 EXP
+              </T>
+            </View>
+            <Illustration name="flame" size={96} />
+          </View>
           <Card style={{ marginTop: space.lg, padding: space.sm }}>
             {WARMUP.map((m, i) => (
               <View key={m.id} style={[styles.listRow, i > 0 && { borderTopWidth: 1, borderTopColor: colors.border }]}>
@@ -125,52 +139,58 @@ export default function Warmup() {
         </>
       ) : phase === 'done' ? (
         <View style={{ alignItems: 'center', marginTop: space.xxl }}>
-          <View style={styles.doneIcon}>
-            <Ionicons name="checkmark" size={56} color="#06101A" />
-          </View>
-          <Text style={[type.display, { marginTop: space.xl, textAlign: 'center' }]}>You are warmed up</Text>
-          <Text style={[type.dim, { marginTop: space.sm, textAlign: 'center' }]}>Quest complete. Go train.</Text>
+          <Illustration name="trophy" size={170} />
+          <T v="display" center style={{ marginTop: space.lg }}>
+            Warmed up
+          </T>
+          <T color="dim" center style={{ marginTop: space.sm }}>
+            Quest complete. Go train.
+          </T>
           <Button label="Back to today" onPress={close} style={{ marginTop: space.xl, alignSelf: 'stretch' }} />
-          <Button label="See skill tree" variant="secondary" onPress={() => router.replace('/skills')} style={{ marginTop: space.sm, alignSelf: 'stretch' }} />
+          <Button label="Open skills" variant="secondary" onPress={() => router.replace('/skills')} style={{ marginTop: space.sm, alignSelf: 'stretch' }} />
         </View>
       ) : (
         <>
           <View style={styles.overall}>
             {WARMUP.map((m, i) => (
-              <View key={m.id} style={[styles.seg, i < index && { backgroundColor: colors.primary }, i === index && { backgroundColor: colors.accent }]} />
+              <View key={m.id} style={[styles.seg, i < index && { backgroundColor: colors.primary }, i === index && { backgroundColor: colors.textDim }]} />
             ))}
           </View>
-          <Text style={[type.small, { marginTop: space.lg, textAlign: 'center' }]}>
+          <T v="label" color="lime" center style={{ marginTop: space.lg }}>
             MOVE {index + 1} OF {WARMUP.length} · {move.area.toUpperCase()}
-          </Text>
-          <Text style={[type.display, { textAlign: 'center', marginTop: space.sm }]}>{move.name}</Text>
+          </T>
+          <T v="h1" center style={{ marginTop: space.sm }}>
+            {move.name}
+          </T>
           <View style={styles.ringWrap}>
-            <Ring progress={1 - left / move.seconds} />
+            <Arc progress={1 - left / move.seconds} />
             <View style={styles.ringCenter}>
               <Text style={styles.time} accessibilityLiveRegion="polite">
-                {left}
+                {formatSeconds(left)}
               </Text>
-              <Text style={type.dim}>seconds</Text>
+              <T color="faint">{phase === 'paused' ? 'Paused' : 'Remaining'}</T>
             </View>
           </View>
           <Card>
-            <Text style={[type.body, { textAlign: 'center' }]}>{move.cue}</Text>
+            <T center>{move.cue}</T>
           </Card>
-          {index + 1 < WARMUP.length ? <Text style={[type.dim, { textAlign: 'center', marginTop: space.md }]}>Next: {WARMUP[index + 1].name}</Text> : <Text style={[type.dim, { textAlign: 'center', marginTop: space.md }]}>Last move. Finish strong.</Text>}
+          <T color="faint" center style={{ marginTop: space.md }}>
+            {index + 1 < WARMUP.length ? `Next: ${WARMUP[index + 1].name}` : 'Last move. Finish strong.'}
+          </T>
           <View style={styles.controls}>
             <Pressable onPress={() => index > 0 && goTo(index - 1, phase === 'running')} disabled={index === 0} style={[styles.ctrl, index === 0 && { opacity: 0.35 }]} accessibilityRole="button" accessibilityLabel="Previous move">
               <Ionicons name="play-skip-back" size={22} color={colors.text} />
             </Pressable>
             <Pressable onPress={phase === 'running' ? pause : start} style={[styles.ctrl, styles.ctrlMain]} accessibilityRole="button" accessibilityLabel={phase === 'running' ? 'Pause' : 'Resume'} testID="warmup-toggle">
-              <Ionicons name={phase === 'running' ? 'pause' : 'play'} size={30} color="#fff" />
+              <Ionicons name={phase === 'running' ? 'pause' : 'play'} size={30} color={colors.onPrimary} />
             </Pressable>
             <Pressable onPress={() => goTo(index + 1, phase === 'running')} style={styles.ctrl} accessibilityRole="button" accessibilityLabel="Skip move" testID="warmup-skip">
               <Ionicons name="play-skip-forward" size={22} color={colors.text} />
             </Pressable>
           </View>
-          <Text style={[type.dim, { textAlign: 'center', marginTop: space.md, fontSize: 12 }]}>
+          <T v="small" color="faint" center style={{ marginTop: space.md }}>
             {formatSeconds(elapsed)} / {formatSeconds(WARMUP_TOTAL_SECONDS)}
-          </Text>
+          </T>
         </>
       )}
     </Screen>
@@ -179,21 +199,19 @@ export default function Warmup() {
 
 const makeStyles = (colors: Palette) => StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  iconBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
+  introRow: { flexDirection: 'row', alignItems: 'center', marginTop: space.lg },
   listRow: { flexDirection: 'row', alignItems: 'center', padding: space.md },
-  num: { width: 26, color: colors.textFaint, fontWeight: '800' },
-  moveName: { color: colors.text, fontWeight: '700', fontSize: 15 },
-  moveArea: { color: colors.textDim, fontSize: 13, marginTop: 2 },
-  moveTime: { color: colors.accent, fontWeight: '800' },
+  num: { width: 28, color: colors.textFaint, fontFamily: ff.semibold },
+  moveName: { color: colors.text, fontFamily: ff.semibold, fontSize: 16 },
+  moveArea: { color: colors.textFaint, fontFamily: ff.regular, fontSize: 13, marginTop: 2 },
+  moveTime: { color: colors.primaryText, fontFamily: ff.semibold },
   overall: { flexDirection: 'row', gap: 4, marginTop: space.lg },
   seg: { flex: 1, height: 5, borderRadius: 3, backgroundColor: colors.surfaceHigh },
-  ringWrap: { alignItems: 'center', justifyContent: 'center', marginVertical: space.xl },
+  ringWrap: { alignItems: 'center', justifyContent: 'center', marginVertical: space.lg },
   ringCenter: { position: 'absolute', alignItems: 'center' },
-  time: { color: colors.text, fontSize: 64, fontWeight: '800', fontVariant: ['tabular-nums'] },
+  time: { color: colors.text, fontSize: 64, fontFamily: ff.semibold, letterSpacing: -2, fontVariant: ['tabular-nums'] },
   controls: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: space.xl, marginTop: space.xl },
-  ctrl: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
-  ctrlMain: { width: 76, height: 76, borderRadius: 38, backgroundColor: colors.primary, borderColor: colors.primary },
-  doneIcon: { width: 110, height: 110, borderRadius: 55, backgroundColor: colors.success, alignItems: 'center', justifyContent: 'center' },
-  // eslint-disable-next-line react-native/no-unused-styles
+  ctrl: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  ctrlMain: { width: 76, height: 76, borderRadius: 38, backgroundColor: colors.primary },
   pad: { borderRadius: radius.md },
 });

@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { radius, useTheme } from '../theme';
+import { ff, radius, useTheme } from '../theme';
 
 type ToastKind = 'xp' | 'info' | 'error';
 interface ToastMsg {
@@ -36,8 +36,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     if (timer.current) clearTimeout(timer.current);
   }, []);
 
-  const bg = msg?.kind === 'xp' ? colors.primarySoft : msg?.kind === 'error' ? colors.dangerSoft : colors.surfaceHigh;
-  const border = msg?.kind === 'xp' ? colors.primary : msg?.kind === 'error' ? colors.danger : colors.border;
+  const bg = msg?.kind === 'xp' ? colors.primary : msg?.kind === 'error' ? colors.danger : colors.text;
+  const fg = msg?.kind === 'xp' ? colors.onPrimary : msg?.kind === 'error' ? '#FFFFFF' : colors.bg;
 
   return (
     <Ctx.Provider value={show}>
@@ -48,10 +48,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             accessibilityLiveRegion="polite"
             style={[
               styles.toast,
-              { backgroundColor: bg, borderColor: border, opacity: anim, transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }] },
+              { backgroundColor: bg, opacity: anim, transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }] },
             ]}
           >
-            <Text style={[styles.text, { color: colors.text }]}>{msg.text}</Text>
+            <Text style={[styles.text, { color: fg }]}>{msg.text}</Text>
           </Animated.View>
         </View>
       ) : null}
@@ -64,6 +64,6 @@ export function useToast() {
 }
 
 const styles = StyleSheet.create({
-  toast: { paddingHorizontal: 18, paddingVertical: 12, borderRadius: radius.pill, borderWidth: 1, maxWidth: '90%' },
-  text: { fontWeight: '800', fontSize: 15, textAlign: 'center' },
+  toast: { paddingHorizontal: 18, paddingVertical: 12, borderRadius: radius.pill, maxWidth: '90%' },
+  text: { fontFamily: ff.semibold, fontSize: 15, textAlign: 'center' },
 });

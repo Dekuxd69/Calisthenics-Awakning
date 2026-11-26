@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Illustration } from './art/Illustrations';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, Modal, StyleSheet, View } from 'react-native';
 import { BADGE_BY_ID } from '../lib/badges';
@@ -9,7 +10,7 @@ import { radius, space, useTheme } from '../theme';
 import { RankBadge } from './RankBadge';
 import { Button, T, tap } from './ui';
 
-const CONFETTI = ['#7C5CFF', '#22D3EE', '#FBBF24', '#F472B6', '#2DD4A0', '#F97316'];
+const CONFETTI = ['#C6F432', '#E4FF7A', '#86AE0E', '#FFFFFF', '#C6F432', '#3A3A3A'];
 
 function Confetti({ run }: { run: number }) {
   const pieces = useMemo(
@@ -80,22 +81,24 @@ export function Celebration() {
     <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
       <View style={[styles.backdrop, { backgroundColor: c.overlay }]}>
         {visible ? <Confetti run={key.length + level.level} /> : null}
-        <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }]}>
+        <View style={[styles.card, { backgroundColor: c.surface }]}>
           <Animated.View style={{ alignItems: 'center', transform: [{ scale: pop }] }}>
-            {levelUp ? (
-              <RankBadge rank={rank} size={120} />
+            {rankUp ? (
+              <RankBadge rank={rank} size={128} />
+            ) : levelUp ? (
+              <Illustration name="trophy" size={150} />
             ) : badge ? (
-              <View style={[styles.badge, { backgroundColor: badge.color + '26' }]}>
-                <View style={[styles.badgeInner, { backgroundColor: badge.color }]}>
-                  <Ionicons name={badge.icon as keyof typeof Ionicons.glyphMap} size={48} color="#fff" />
+              <View style={[styles.badge, { backgroundColor: c.primarySoft }]}>
+                <View style={[styles.badgeInner, { backgroundColor: c.primary }]}>
+                  <Ionicons name={badge.icon as keyof typeof Ionicons.glyphMap} size={48} color={c.onPrimary} />
                 </View>
               </View>
             ) : null}
           </Animated.View>
-          <T v="label" color={levelUp ? rank.color : (badge?.color ?? c.primary)} center style={{ marginTop: space.lg }}>
+          <T v="label" color="lime" center style={{ marginTop: space.lg }}>
             {rankUp ? 'NEW RANK' : levelUp ? 'LEVEL UP' : 'BADGE EARNED'}
           </T>
-          <T v="display" center style={{ marginTop: 4 }}>
+          <T v="hero" center style={{ marginTop: 4 }}>
             {levelUp ? (rankUp ? `${rank.id}-Rank` : `Level ${level.level}`) : badge?.name}
           </T>
           <T color="dim" center style={{ marginTop: 4 }}>
@@ -110,7 +113,7 @@ export function Celebration() {
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl },
-  card: { width: '100%', maxWidth: 360, borderRadius: radius.lg, padding: space.xl, borderWidth: 1, alignItems: 'center' },
+  card: { width: '100%', maxWidth: 360, borderRadius: radius.lg, padding: space.xl, alignItems: 'center' },
   badge: { width: 128, height: 128, borderRadius: 64, alignItems: 'center', justifyContent: 'center' },
   badgeInner: { width: 96, height: 96, borderRadius: 48, alignItems: 'center', justifyContent: 'center' },
 });

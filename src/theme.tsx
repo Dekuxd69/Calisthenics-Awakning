@@ -10,69 +10,89 @@ export interface Palette {
   text: string;
   textDim: string;
   textFaint: string;
+  /** Lime, used as a fill. */
   primary: string;
+  /** Lime-family colour that stays readable as text or an icon on the background. */
+  primaryText: string;
+  /** Text and icons drawn on top of a lime fill. */
+  onPrimary: string;
   primarySoft: string;
-  accent: string;
   success: string;
-  successSoft: string;
   warning: string;
   danger: string;
   dangerSoft: string;
   overlay: string;
-  /** Silhouette colour inside coloured circles. */
-  onColor: string;
+  /** Locked / inactive circles. */
+  muted: string;
+  mutedEdge: string;
 }
 
+export const LIME = '#C6F432';
+export const LIME_DEEP = '#8DB814';
+
 export const DARK: Palette = {
-  bg: '#07090F',
-  surface: '#10141F',
-  surfaceHigh: '#181D2C',
-  border: '#232A3D',
-  text: '#F4F6FB',
-  textDim: '#A0A9C0',
-  textFaint: '#7F88A3',
-  primary: '#7C5CFF',
-  primarySoft: '#221B45',
-  accent: '#22D3EE',
-  success: '#2DD4A0',
-  successSoft: '#0F2E27',
-  warning: '#FBBF24',
-  danger: '#F87171',
-  dangerSoft: '#2A1418',
-  overlay: 'rgba(3,5,10,0.82)',
-  onColor: '#FFFFFF',
+  bg: '#0A0A0A',
+  surface: '#161616',
+  surfaceHigh: '#212121',
+  border: '#262626',
+  text: '#FFFFFF',
+  textDim: '#A3A3A3',
+  textFaint: '#7C7C7C',
+  primary: LIME,
+  primaryText: LIME,
+  onPrimary: '#0A0A0A',
+  primarySoft: '#232B0E',
+  success: LIME,
+  warning: '#FFB020',
+  danger: '#FF5F57',
+  dangerSoft: '#2A1514',
+  overlay: 'rgba(0,0,0,0.78)',
+  muted: '#2A2A2A',
+  mutedEdge: '#1C1C1C',
 };
 
 export const LIGHT: Palette = {
-  bg: '#F4F5FA',
+  bg: '#F3F3EF',
   surface: '#FFFFFF',
-  surfaceHigh: '#ECEEF5',
-  border: '#DFE2EC',
-  text: '#0E1220',
-  textDim: '#4C546B',
-  textFaint: '#666E89',
-  primary: '#6A47FF',
-  primarySoft: '#ECE7FF',
-  accent: '#0891B2',
-  success: '#059669',
-  successSoft: '#DBF4EA',
-  warning: '#D97706',
-  danger: '#DC2626',
-  dangerSoft: '#FDECEC',
-  overlay: 'rgba(10,12,20,0.5)',
-  onColor: '#FFFFFF',
+  surfaceHigh: '#ECECE6',
+  border: '#E3E3DC',
+  text: '#0A0A0A',
+  textDim: '#4A4A4A',
+  textFaint: '#6F6F6F',
+  primary: LIME,
+  primaryText: '#4C6B00',
+  onPrimary: '#0A0A0A',
+  primarySoft: '#EEF9CF',
+  success: '#4C6B00',
+  warning: '#B26A00',
+  danger: '#D93025',
+  dangerSoft: '#FDECEA',
+  overlay: 'rgba(10,10,10,0.45)',
+  muted: '#E2E2DB',
+  mutedEdge: '#CACAC2',
 };
 
-export const radius = { sm: 10, md: 16, lg: 24, pill: 999 };
+export const radius = { sm: 12, md: 18, lg: 26, pill: 999 };
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 };
 
+/** Outfit font families. Custom fonts ignore fontWeight on Android, so pick a family instead. */
+export const ff = {
+  regular: 'Outfit_400Regular',
+  medium: 'Outfit_500Medium',
+  semibold: 'Outfit_600SemiBold',
+  bold: 'Outfit_700Bold',
+  black: 'Outfit_800ExtraBold',
+};
+
 export const font = {
-  display: { fontSize: 32, fontWeight: '800' as const, letterSpacing: -0.8 },
-  h1: { fontSize: 26, fontWeight: '800' as const, letterSpacing: -0.5 },
-  h2: { fontSize: 18, fontWeight: '700' as const, letterSpacing: -0.2 },
-  body: { fontSize: 15, lineHeight: 21 },
-  small: { fontSize: 13, lineHeight: 18 },
-  label: { fontSize: 11, fontWeight: '700' as const, letterSpacing: 1.2 },
+  hero: { fontSize: 44, fontFamily: ff.semibold, letterSpacing: -1.5 },
+  display: { fontSize: 32, fontFamily: ff.semibold, letterSpacing: -1 },
+  h1: { fontSize: 26, fontFamily: ff.semibold, letterSpacing: -0.6 },
+  h2: { fontSize: 18, fontFamily: ff.semibold, letterSpacing: -0.2 },
+  body: { fontSize: 15, fontFamily: ff.regular, lineHeight: 21 },
+  bodyStrong: { fontSize: 15, fontFamily: ff.semibold, lineHeight: 21 },
+  small: { fontSize: 13, fontFamily: ff.regular, lineHeight: 18 },
+  label: { fontSize: 12, fontFamily: ff.medium, letterSpacing: 0.4 },
 };
 
 interface ThemeValue {
@@ -97,20 +117,4 @@ export function useTheme() {
 export function useStyles<T>(factory: (c: Palette) => T): T {
   const { c } = useTheme();
   return useMemo(() => StyleSheet.create(factory(c) as never) as T, [c, factory]);
-}
-
-/** Text styles with colours applied, for screens that style Text directly. */
-export function useType() {
-  const { c } = useTheme();
-  return useMemo(
-    () => ({
-      display: { ...font.display, color: c.text },
-      h1: { ...font.h1, color: c.text },
-      h2: { ...font.h2, color: c.text },
-      body: { ...font.body, color: c.text },
-      dim: { ...font.body, color: c.textDim },
-      small: { ...font.label, color: c.textFaint },
-    }),
-    [c],
-  );
 }
