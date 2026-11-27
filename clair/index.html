@@ -1,0 +1,38 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#fbeff5"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Clair"><link rel="apple-touch-icon" href="icon-192.png"><link rel="manifest" href="manifest.json"><title>Clair</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;height:100%;background:#f3e9f1;overflow:hidden;font-family:system-ui}
+#app{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#phone{position:relative;height:100dvh;width:min(100vw,calc(100dvh*393/852));max-height:900px;background:#fff;overflow:hidden}
+@media (min-width:600px){#phone{height:min(100dvh,880px);border-radius:44px;box-shadow:0 30px 80px rgba(80,10,60,.3);border:10px solid #14111a;width:calc(min(100dvh,880px)*393/852)}}
+.scr{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;opacity:0;pointer-events:none;transform:translateY(14px);transition:opacity .35s ease,transform .35s ease;scrollbar-width:none}
+.scr::-webkit-scrollbar{display:none}.scr.on{opacity:1;pointer-events:auto;transform:none}
+.wrap{position:relative;width:100%}.wrap img{display:block;width:100%;height:auto;user-select:none;-webkit-user-drag:none}
+.h{position:absolute;cursor:pointer}
+</style></head><body><div id="app"><div id="phone"></div></div>
+<script>
+// [screen, hotspots[[x%,y px,w%,h px,target]]] on 393-wide coordinates
+const N=25,H=852,P=document.getElementById('phone');
+const cont=[0,752,100,70];
+const hs={
+1:[[0,752,100,70,2]],2:[[0,752,100,70,3]],3:[[0,752,100,70,4],[0,60,20,50,2]],4:[[0,752,100,70,5],[0,60,20,50,3]],5:[[0,752,100,70,6],[0,60,20,50,4]],
+6:[[0,752,100,70,8],[22,575,56,62,7],[0,60,20,50,5]],7:[[8,755,84,60,6]],8:[[0,752,100,70,9],[0,60,20,50,6]],9:[[0,752,100,70,10],[0,60,20,50,8]],
+10:[[0,752,100,70,11],[0,60,20,50,9]],11:[[0,752,100,70,12],[0,60,20,50,10]],12:[[0,752,100,70,13],[0,60,20,50,11]],13:[[0,752,100,70,14],[0,60,20,50,12]],
+14:[[0,752,100,70,15],[0,60,20,50,13]],15:[[0,752,100,70,16],[0,60,20,50,14]],16:[[0,752,100,70,17],[0,60,20,50,15]],17:[[0,752,100,70,18]],
+18:[[0,752,100,70,19]],19:[[0,752,100,70,20],[0,60,20,50,17]],20:[[0,752,100,70,21],[0,60,20,50,19]],21:[[8,648,84,60,22],[88,260,12,50,20]],22:[[15,580,70,55,23],[88,200,12,50,21]],
+23:[[4,2480,92,70,24],[0,45,40,40,22]],24:[[8,733,84,60,25],[0,60,20,40,23]],25:[[0,50,15,40,24]]};
+const isTall={23:2766,24:2436,25:1392};
+let cur=0,tm=null;
+for(let i=1;i<=N;i++){const s=document.createElement('div');s.className='scr';s.id='s'+i;const w=document.createElement('div');w.className='wrap';
+ const im=new Image();im.src='s/'+String(i).padStart(2,'0')+'.webp';im.draggable=false;w.appendChild(im);const ht=isTall[i]||H;
+ (hs[i]||[]).forEach(([x,y,wd,h,t])=>{const d=document.createElement('div');d.className='h';d.style.cssText=`left:${x}%;top:${y/ht*100}%;width:${wd}%;height:${h/ht*100}%`;d.onclick=e=>{e.stopPropagation();go(t)};w.appendChild(d)});
+ s.appendChild(w);P.appendChild(s)}
+function go(n){clearTimeout(tm);if(cur)document.getElementById('s'+cur).classList.remove('on');cur=n;const s=document.getElementById('s'+n);s.scrollTop=0;s.classList.add('on');try{history.replaceState(null,'','#'+n)}catch(e){}
+ if(n===18)tm=setTimeout(()=>{if(cur===18)go(19)},3200)}
+// swipe on intro
+let sx=null;P.addEventListener('touchstart',e=>{sx=e.touches[0].clientX});P.addEventListener('touchend',e=>{if(cur===1&&sx!==null&&sx-e.changedTouches[0].clientX<-40)go(2);sx=null});
+go(parseInt(location.hash.slice(1))||1);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
